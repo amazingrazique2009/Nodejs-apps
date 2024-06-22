@@ -18,12 +18,6 @@ jobs:
         with:
           node-version: '18'  # Adjust the Node.js version as per your requirements
 
-      - name: Install Node.js, npm, and PM2
-        run: |
-          sudo apt update
-          sudo apt install -y nodejs npm
-          npm install pm2 -g
-
       - name: Install dependencies
         run: npm install
 
@@ -54,8 +48,20 @@ jobs:
 
           # SSH into the EC2 instance to set up environment and start the application
           ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
-          export PATH="$PATH:/home/ubuntu/.nvm/versions/node/v20.15.0/bin/node:/home/ubuntu/.nvm/versions/node/v20.15.0/bin/npm:/home/ubuntu/.nvm/versions/node/v20.15.0/bin/pm2"
-          cd /home/ubuntu/my-node-app
-          npm install
-          pm2 restart all || pm2 start app.js
+            # Install Node.js, npm, and PM2
+            sudo apt update
+            sudo apt install -y nodejs npm
+            sudo npm install -g pm2
+
+            # Add Node.js, npm, and PM2 to PATH
+            export PATH="$PATH:/usr/bin/node:/usr/bin/npm:/usr/local/bin/pm2"
+
+            # Verify installations
+            node -v
+            npm -v
+            pm2 -v
+
+            cd /home/ubuntu/my-node-app
+            npm install
+            pm2 restart all || pm2 start app.js
           EOF
