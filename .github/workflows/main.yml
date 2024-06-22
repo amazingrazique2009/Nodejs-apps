@@ -39,10 +39,12 @@ jobs:
         # Ensure directory creation and permissions are set correctly
         ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo mkdir -p /home/$EC2_USER/my-node-app && sudo chown -R $EC2_USER:$EC2_USER /home/$EC2_USER/my-node-app && ls -la /home/$EC2_USER'
 
+        # Copy necessary files to the EC2 instance
         scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app/
+
+        # Optionally, copy other necessary directories like `public` or `src`
         scp -i sample.pem -o StrictHostKeyChecking=no -r public $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app/
         scp -i sample.pem -o StrictHostKeyChecking=no -r src $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app/
-
 
         # SSH into the EC2 instance to install dependencies and start the application
         ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
