@@ -10,46 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # Adjust the Node.js version as per your requirements
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run tests
-      run: npm test
+      - name: Run tests
+        run: npm test
 
-    - name: Deploy to EC2
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        EC2_HOST: ${{ secrets.EC2_HOST }}
-        EC2_USER: ubuntu
-        KEY_FILE: ${{ secrets.KEY_FILE }}
-        AWS_DEFAULT_REGION: 'ap-south-1'
+      - name: Deploy to EC2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ubuntu
+          KEY_FILE: ${{ secrets.KEY_FILE }}
+          AWS_DEFAULT_REGION: 'ap-south-1'
 
-      run: |
-        echo "${{ secrets.KEY_FILE }}" > sample.pem
-        chmod 400 sample.pem
+        run: |
+          echo "${{ secrets.KEY_FILE }}" > sample.pem
+          chmod 400 sample.pem
 
-        # Ensure directory creation and permissions are set correctly
-        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo mkdir -p /home/ubuntu/my-node-app && sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app'
+          # Ensure directory creation and permissions are set correctly
+          ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo mkdir -p /home/ubuntu/my-node-app && sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app'
 
-        # Copy necessary files to the EC2 instance
-        scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
+          # Copy necessary files to the EC2 instance
+          scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
 
-        # Adjust ownership and permissions
-        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app && sudo chmod -R 755 /home/ubuntu/my-node-app'
+          # Adjust ownership and permissions
+          ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app && sudo chmod -R 755 /home/ubuntu/my-node-app'
 
-        # SSH into the EC2 instance to install dependencies and start the application
-        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
-          cd /home/ubuntu/my-node-app
-          npm install
-          pm2 restart all || pm2 start app.js
-        EOF
-
+          # SSH into the EC2 instance to install dependencies and start the application
+          ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+            cd /home/ubuntu/my-node-app
+            npm install
+            pm2 restart all || pm2 start app.js
+          EOF
