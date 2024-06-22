@@ -18,6 +18,12 @@ jobs:
         with:
           node-version: '18'  # Adjust the Node.js version as per your requirements
 
+      - name: Install Node.js, npm, and PM2
+        run: |
+          sudo apt update
+          sudo apt install -y nodejs npm
+          npm install pm2 -g
+
       - name: Install dependencies
         run: npm install
 
