@@ -31,27 +31,34 @@ jobs:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ubuntu
         KEY_FILE: ${{ secrets.KEY_FILE }}
+        AWS_DEFAULT_REGION: 'ap-south-1'  # Add your AWS region here if necessary
 
       run: |
         echo "${{ secrets.KEY_FILE }}" > sample.pem
         chmod 400 sample.pem
 
         # Ensure directory creation and permissions are set correctly
-        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo mkdir -p /home/$EC2_USER/my-node-app && sudo chown -R $EC2_USER:$EC2_USER /home/$EC2_USER/my-node-app'
+        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo mkdir -p /home/ubuntu/my-node-app && sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app'
+
+        # Debugging: List contents of `/home/ubuntu` before `scp`
+        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'ls -la /home/ubuntu'
 
         # Copy necessary files to the EC2 instance
-        scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app/
+        scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
 
         # Optionally, copy other necessary directories like `public` or `src`
-        scp -i sample.pem -o StrictHostKeyChecking=no -r public $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app/
-        scp -i sample.pem -o StrictHostKeyChecking=no -r src $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app/
+        scp -i sample.pem -o StrictHostKeyChecking=no -r public $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
+        scp -i sample.pem -o StrictHostKeyChecking=no -r src $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
 
         # Adjust ownership and permissions (if necessary)
-        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo chown -R $EC2_USER:$EC2_USER /home/$EC2_USER/my-node-app && sudo chmod -R 755 /home/$EC2_USER/my-node-app'
+        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app && sudo chmod -R 755 /home/ubuntu/my-node-app'
+
+        # Debugging: List contents of `/home/ubuntu` after `scp`
+        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'ls -la /home/ubuntu'
 
         # SSH into the EC2 instance to install dependencies and start the application
         ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
-          cd /home/$EC2_USER/my-node-app
+          cd /home/ubuntu/my-node-app
           npm install
           pm2 restart all || pm2 start app.js
         EOF
