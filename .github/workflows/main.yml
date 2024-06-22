@@ -43,10 +43,6 @@ jobs:
         # Copy necessary files to the EC2 instance
         scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
 
-        # Optionally, copy other necessary directories like `public` or `src`
-        scp -i sample.pem -o StrictHostKeyChecking=no -r public $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
-        scp -i sample.pem -o StrictHostKeyChecking=no -r src $EC2_USER@$EC2_HOST:/home/ubuntu/my-node-app/
-
         # Adjust ownership and permissions
         ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo chown -R ubuntu:ubuntu /home/ubuntu/my-node-app && sudo chmod -R 755 /home/ubuntu/my-node-app'
 
@@ -56,3 +52,4 @@ jobs:
           npm install
           pm2 restart all || pm2 start app.js
         EOF
+
