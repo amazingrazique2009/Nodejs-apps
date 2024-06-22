@@ -35,7 +35,7 @@ jobs:
       run: |
         echo "${{ secrets.KEY_FILE }}" > sample.pem
         chmod 400 sample.pem
-        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'mkdir -p /home/$EC2_USER/my-node-app'
+        ssh -i sample.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'sudo mkdir -p /home/$EC2_USER/my-node-app'
         # Copy necessary files to the EC2 instance
         scp -i sample.pem -o StrictHostKeyChecking=no package.json package-lock.json app.js $EC2_USER@$EC2_HOST:/home/$EC2_USER/my-node-app
         # Optionally, copy other necessary directories like `public` or `src`
